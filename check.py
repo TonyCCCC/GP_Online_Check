@@ -14,9 +14,19 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
+        self.check_button.clicked.connect(self.loading)
         self.check_button.clicked.connect(self.check)
+        self.text = 'Loading...\r\n'
+
+    def clear(self):
+        self.result_box.setPlainText('')
+
+    def loading(self):
+        text = self.text
+        self.result_box.setPlainText(text)
 
     def check(self):
+        text = self.text
         pkg = self.input_box.toPlainText()
         headers = {
             'Referer': 'https://play.google.com/store/apps',
@@ -26,19 +36,21 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
 
         pkg_list = re.findall(r"[a-zA-Z0-9._]+", pkg)
         online_list = []
-
         for p in pkg_list:
             print('Checking %s' % p)
             response = requests.get('https://play.google.com/store/apps/details?id=' + p, headers=headers)
             html = etree.HTML(response.text)
             title = html.xpath('//head/title/text()')
+            print(title)
             if title[0] == 'Not Found':
                 pass
             else:
                 online_list.append(p)
 
         online_list_str = '\r\n'.join(online_list)
-        self.result_box.setText(online_list_str)
+        text += online_list_str
+        text += '\r\nDone.'
+        self.result_box.setPlainText(text)
 
 
 if __name__ == "__main__":
